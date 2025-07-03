@@ -1,21 +1,32 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Phone } from './phone.entity';
+import * as fs from 'fs';
+import * as path from 'path';
+
+const PHONE_NUMBERS_FILE = path.join(__dirname, '../phoneNumbers.json');
 
 @Injectable()
 export class AppService {
-  constructor(
-    @InjectRepository(Phone)
-    private phoneRepository: Repository<Phone>,
-  ) {}
-
   getHello(): string {
     return 'Hello World!';
   }
 
   async savePhoneNumber(phoneNumber: string) {
-    const phone = this.phoneRepository.create({ phoneNumber });
+    // Read existing phone numbers
+    let phoneNumbers: string[] = [];
+    if (fs.existsSync(PHONE_NUMBERS_FILE)) {
+      const data = fs.readFileSync(PHONE_NUMBERS_FILE, 'utf-8');
+      phoneNumbers = JSON.parse(data);
+    }
+    // Add new phone number
+    phoneNumbers.push(phoneNumber);
+    // Save back to file
+    fs.writeFileSync(
+      PHONE_NUMBERS_FILE,
+      JSON.stringify(phoneNumbers, null, 2),
+      'utf-8',
+    );
+
+    // Kavenegar logic remains unchanged
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const Kavenegar = require('kavenegar');
     const api = Kavenegar.KavenegarApi({
@@ -29,6 +40,6 @@ export class AppService {
       receptor: phoneNumber,
     });
 
-    return await this.phoneRepository.save(phone);
+    return { phoneNumber };
   }
 }

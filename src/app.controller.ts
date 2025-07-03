@@ -2,8 +2,6 @@ import { Controller, Get, Post, Body } from '@nestjs/common';
 import { AppService } from './app.service';
 import { ApiTags, ApiBody, ApiResponse } from '@nestjs/swagger';
 
-import { Phone } from './phone.entity';
-
 import { IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -25,7 +23,7 @@ export class AppController {
 
   @Post('phone')
   @ApiBody({ type: CreatePhoneDto })
-  @ApiResponse({ status: 201, description: 'Phone number saved', type: Phone })
+  @ApiResponse({ status: 201, description: 'Phone number saved' })
   async createPhone(@Body() createPhoneDto: CreatePhoneDto) {
     return await this.appService.savePhoneNumber(createPhoneDto.phoneNumber);
   }
