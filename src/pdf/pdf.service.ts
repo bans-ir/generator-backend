@@ -5,9 +5,19 @@ import * as path from 'path';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const reshaper = require('arabic-persian-reshaper');
 
+interface Item {
+  count: number;
+  title: string;
+  value: number;
+}
+
 @Injectable()
 export class PdfService {
-  async generatePdfToFile(amount: number, fileName: string): Promise<string> {
+  async generatePdfToFile(
+    amount: number,
+    fileName: string,
+    items: Item[],
+  ): Promise<string> {
     const pdfPath = path.join(__dirname, `../../public/pdfs/${fileName}`);
     const doc = new PDFDocument({ size: 'A4', margin: 50 });
 
@@ -25,14 +35,15 @@ export class PdfService {
 
     const companyName = reshaper.PersianShaper.convertArabic('بن شرکت');
     const description = reshaper.PersianShaper.convertArabic(
-      'شما توسط شده وارد مقدار گزارش',
+      'گزارش مصرف انرژی تجهیزات',
     );
-    const valueText = reshaper.PersianShaper.convertArabic(`${amount} وات`);
+    const totalText = reshaper.PersianShaper.convertArabic(`وات ${amount}`);
 
-    // طراحی مشابه قبل
+    // رنگ‌ها
     const primaryColor = '#203933';
     const lightGray = '#F5F5F5';
 
+    // Header
     doc.rect(0, 25, doc.page.width, 80).fill(primaryColor);
     doc.fillColor('white').fontSize(22).text(companyName, {
       align: 'center',
@@ -42,7 +53,7 @@ export class PdfService {
     doc.fillColor('black');
     doc.fontSize(14).text(description, { align: 'right' });
 
-    doc.moveDown(0.5);
+    doc.moveDown(1);
     doc
       .strokeColor('#cccccc')
       .lineWidth(1)
@@ -50,18 +61,87 @@ export class PdfService {
       .lineTo(545, doc.y)
       .stroke();
 
-    doc.moveDown(2);
-    const boxWidth = doc.page.width - 100;
-    const boxX = 50;
-    const boxY = doc.y;
+    // فهرست اقلام (جدول)
+    doc.moveDown(1.5);
+    doc
+      .fontSize(14)
+      .fillColor('#000')
+      .text(reshaper.PersianShaper.convertArabic('جزئیات مصرف'), {
+        align: 'right',
+      });
 
-    doc.rect(boxX, boxY, boxWidth, 60).fill(lightGray);
+    doc.moveDown(1);
+
+    // سر تیتر جدول
+    const startY = doc.y;
+    const col1 = 70;
+    const col2 = 180;
+    const col3 = 480;
+
+    doc.fontSize(13).fillColor('#ffffff');
+    doc.rect(50, startY, 500, 30).fill(primaryColor);
+
+    doc
+      .fillColor('white')
+      .text(reshaper.PersianShaper.convertArabic('ردیف'), col3, startY + 7, {
+        align: 'right',
+        width: 50,
+      });
+    doc.text(
+      reshaper.PersianShaper.convertArabic('کالا عنوان'),
+      col2,
+      startY + 7,
+      {
+        align: 'right',
+        width: 200,
+      },
+    );
+    doc.text(
+      reshaper.PersianShaper.convertArabic('مصرف مقدار'),
+      col1,
+      startY + 7,
+      {
+        align: 'right',
+        width: 100,
+      },
+    );
+
+    doc.moveDown(2);
+
+    // ردیف‌های جدول
+    JSON.parse(items as any).forEach((item, index) => {
+      const rowY = doc.y;
+      const totalValue = item.count * item.value;
+
+      doc.fillColor('black');
+      doc.fontSize(12);
+
+      doc.text(`${index + 1}`, col3, rowY, { align: 'right', width: 50 });
+
+      doc.text(reshaper.PersianShaper.convertArabic(item.title), col2, rowY, {
+        align: 'right',
+        width: 200,
+      });
+
+      doc.text(
+        reshaper.PersianShaper.convertArabic(`${totalValue} وات`),
+        col1,
+        rowY,
+        { align: 'right', width: 100 },
+      );
+
+      doc.moveDown(1);
+    });
+
+    // خط جمع نهایی
+    doc.moveDown(2);
+    doc.rect(50, doc.y, 500, 40).fill(lightGray);
     doc
       .fillColor('black')
-      .fontSize(18)
-      .text(valueText, boxX + 20, boxY + 20, {
+      .fontSize(16)
+      .text(totalText, 70, doc.y + 10, {
         align: 'right',
-        width: boxWidth - 40,
+        width: 460,
       });
 
     doc.end();

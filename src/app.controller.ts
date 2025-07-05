@@ -1,7 +1,18 @@
 import { Controller, Post, Body, Req } from '@nestjs/common';
 import { AppService } from './app.service';
 
-import { IsString } from 'class-validator';
+import { IsArray, IsInt, IsString, ValidateNested } from 'class-validator';
+
+class ItemsDto {
+  @IsInt()
+  count: number;
+
+  @IsString()
+  title: string;
+
+  @IsInt()
+  value: number;
+}
 
 class CreatePhoneDto {
   @IsString()
@@ -9,6 +20,10 @@ class CreatePhoneDto {
 
   @IsString()
   value: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  items: ItemsDto[];
 }
 
 @Controller()
@@ -20,6 +35,7 @@ export class AppController {
     return await this.appService.savePhoneNumber(
       createPhoneDto.phoneNumber,
       +createPhoneDto.value,
+      createPhoneDto.items,
       req,
     );
   }

@@ -10,7 +10,16 @@ const PHONE_NUMBERS_FILE = path.join(__dirname, '../phoneNumbers.json');
 export class AppService {
   constructor(private readonly pdfService: PdfService) {}
 
-  async savePhoneNumber(phoneNumber: string, amount: number, req: Request) {
+  async savePhoneNumber(
+    phoneNumber: string,
+    amount: number,
+    items: {
+      count: number;
+      title: string;
+      value: number;
+    }[],
+    req: Request,
+  ) {
     // ذخیره شماره در فایل
     let phoneNumbers: string[] = [];
     if (fs.existsSync(PHONE_NUMBERS_FILE)) {
@@ -29,6 +38,7 @@ export class AppService {
     const relativePath = await this.pdfService.generatePdfToFile(
       amount,
       fileName,
+      items,
     );
 
     // تشخیص دامین و ساخت لینک کامل
