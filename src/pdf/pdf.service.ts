@@ -1,3 +1,4 @@
+// src/pdf/pdf.service.ts
 import { Injectable } from '@nestjs/common';
 import * as PDFDocument from 'pdfkit';
 import * as fs from 'fs';
@@ -18,7 +19,7 @@ export class PdfService {
     fileName: string,
     items: Item[],
   ): Promise<string> {
-    const pdfPath = path.join(__dirname, `../../public/pdfs/${fileName}`);
+    const pdfPath = path.join(__dirname, '../../public/pdfs', fileName);
     const doc = new PDFDocument({ size: 'A4', margin: 50 });
 
     const dir = path.dirname(pdfPath);
@@ -39,19 +40,16 @@ export class PdfService {
     );
     const totalText = reshaper.PersianShaper.convertArabic(`وات ${amount}`);
 
-    // رنگ‌ها
     const primaryColor = '#203933';
     const lightGray = '#F5F5F5';
 
-    // Header
     doc.rect(0, 25, doc.page.width, 80).fill(primaryColor);
     doc.fillColor('white').fontSize(22).text(companyName, {
       align: 'center',
     });
 
     doc.moveDown(2);
-    doc.fillColor('black');
-    doc.fontSize(14).text(description, { align: 'right' });
+    doc.fillColor('black').fontSize(14).text(description, { align: 'right' });
 
     doc.moveDown(1);
     doc
@@ -61,7 +59,6 @@ export class PdfService {
       .lineTo(545, doc.y)
       .stroke();
 
-    // فهرست اقلام (جدول)
     doc.moveDown(1.5);
     doc
       .fontSize(14)
@@ -72,7 +69,6 @@ export class PdfService {
 
     doc.moveDown(1);
 
-    // سر تیتر جدول
     const startY = doc.y;
     const col1 = 70;
     const col2 = 180;
@@ -108,13 +104,11 @@ export class PdfService {
 
     doc.moveDown(2);
 
-    // ردیف‌های جدول
     JSON.parse(items as any).forEach((item, index) => {
       const rowY = doc.y;
       const totalValue = item.count * item.value;
 
-      doc.fillColor('black');
-      doc.fontSize(12);
+      doc.fillColor('black').fontSize(12);
 
       doc.text(`${index + 1}`, col3, rowY, { align: 'right', width: 50 });
 
@@ -127,13 +121,15 @@ export class PdfService {
         reshaper.PersianShaper.convertArabic(`${totalValue} وات`),
         col1,
         rowY,
-        { align: 'right', width: 100 },
+        {
+          align: 'right',
+          width: 100,
+        },
       );
 
       doc.moveDown(1);
     });
 
-    // خط جمع نهایی
     doc.moveDown(2);
     doc.rect(50, doc.y, 500, 40).fill(lightGray);
     doc
