@@ -56,7 +56,6 @@ export class AppService {
 
     api.Send({
       message: `✅ اطلاعات شما ثبت شد.\n📄 مشاهده PDF:\n${fullUrl}`,
-      sender: '2000660110',
       receptor: phoneNumber,
     });
 
