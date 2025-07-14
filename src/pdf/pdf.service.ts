@@ -34,13 +34,20 @@ export class PdfService {
     doc.registerFont('Vazir', fontPath);
     doc.font('Vazir');
 
-    const companyName = reshaper.PersianShaper.convertArabic('بن شرکت');
+    // Add logo image at the top center
+    const logoPath = path.join(__dirname, '../../src/assets/logo.png');
+    if (fs.existsSync(logoPath)) {
+      // Center the logo horizontally, place it at y=30, width=80px
+      doc.image(logoPath, doc.page.width / 2 - 40, 30, { width: 80 });
+    }
+
+    const companyName = reshaper.PersianShaper.convertArabic('بان شرکت');
     const description = reshaper.PersianShaper.convertArabic(
       'گزارش مصرف انرژی تجهیزات',
     );
     const totalText = reshaper.PersianShaper.convertArabic(`وات ${amount}`);
 
-    const primaryColor = '#203933';
+    const primaryColor = '#FFBC41';
     const lightGray = '#F5F5F5';
 
     doc.rect(0, 25, doc.page.width, 80).fill(primaryColor);

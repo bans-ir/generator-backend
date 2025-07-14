@@ -18,8 +18,20 @@ class CreatePhoneDto {
   @IsString()
   phoneNumber: string;
 
+  @IsArray()
+  @ValidateNested({ each: true })
+  items: ItemsDto[];
+}
+
+class VerifyOtpDto {
   @IsString()
-  value: string;
+  phoneNumber: string;
+
+  @IsString()
+  otp: string;
+
+  @IsInt()
+  value: number;
 
   @IsArray()
   @ValidateNested({ each: true })
@@ -31,11 +43,17 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Post('phone')
-  async createPhone(@Body() createPhoneDto: CreatePhoneDto, @Req() req) {
-    return await this.appService.savePhoneNumber(
-      createPhoneDto.phoneNumber,
-      +createPhoneDto.value,
-      createPhoneDto.items,
+  async requestOtp(@Body() createPhoneDto: CreatePhoneDto) {
+    return await this.appService.savePhoneNumber(createPhoneDto.phoneNumber);
+  }
+
+  @Post('phone/verify')
+  async verifyOtp(@Body() verifyOtpDto: VerifyOtpDto, @Req() req) {
+    return await this.appService.verifyOtp(
+      verifyOtpDto.phoneNumber,
+      verifyOtpDto.otp,
+      verifyOtpDto.value,
+      verifyOtpDto.items,
       req,
     );
   }
