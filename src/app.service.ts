@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { PdfService } from './pdf/pdf.service';
 import { Request } from 'express';
-
+import axios from 'axios';
 const PHONE_NUMBERS_FILE = path.join(__dirname, '../phoneNumbers.json');
 
 @Injectable()
@@ -18,6 +18,29 @@ export class AppService {
     ).toString();
   }
 
+  private async sendVerificationSms(apiKey, receptor, token, template) {
+    const url = `https://api.kavenegar.com/v1/${apiKey}/verify/lookup.json`;
+
+    const params = {
+      receptor,
+      token,
+      template,
+    };
+
+    try {
+      const response = await axios.get(url, { params });
+      const result = response.data;
+
+      if (result.return.status === 200) {
+        console.log('✅ پیامک با موفقیت ارسال شد.');
+      } else {
+        console.error(`⚠️ خطا از سمت Kavenegar: ${result.return.message}`);
+      }
+    } catch (err) {
+      console.error('❌ خطا در ارتباط با سرور:', err.message);
+    }
+  }
+
   async savePhoneNumber(phoneNumber: string) {
     // GeneraP
     const otp = this.generateOtp();
@@ -25,17 +48,12 @@ export class AppService {
     this.otpStore.set(phoneNumber, { otp, expiresAt });
 
     // Send OTP via SMS
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const Kavenegar = require('kavenegar');
-
-    const api = Kavenegar.KavenegarApi({
-      apikey:
-        '6C7636756355653734503542386D75727863676F2F7533597147454F48386B5754464E69746534307467343D',
-    });
-    await api.Send({
-      message: `کد تایید شما: ${otp}`,
-      receptor: phoneNumber,
-    });
+    this.sendVerificationSms(
+      '6C7636756355653734503542386D75727863676F2F7533597147454F48386B5754464E69746534307467343D',
+      phoneNumber,
+      otp,
+      'power',
+    );
 
     // Do not save phone number or generate PDF yet
     return { phoneNumber, message: 'کد ارسال شد', otpCode: otp };
