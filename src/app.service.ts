@@ -70,9 +70,9 @@ export class AppService {
     }[],
     req: Request,
   ) {
-    try {
-      const record = this.otpStore.get(phoneNumber);
-    if (!record || record.otp !== otp || record.expiresAt < Date.now()) {
+
+    const record = this.otpStore.get(phoneNumber);
+  if (!record || record.otp !== otp || record.expiresAt < Date.now()) {
       return { success: false, message: 'Invalid or expired OTP' };
     }
     this.otpStore.delete(phoneNumber);
@@ -89,13 +89,10 @@ export class AppService {
       JSON.stringify(phoneNumbers, null, 2),
       'utf-8',
     );
-
-    } catch (error) {
-      console.log(error)
-    }
     
     // Generate PDF
     const fileName = `${Date.now()}-${phoneNumber}.pdf`;
+    
     const relativePath = await this.pdfService.generatePdfToFile(
       amount,
       fileName,
