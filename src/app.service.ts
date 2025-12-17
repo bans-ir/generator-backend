@@ -70,7 +70,8 @@ export class AppService {
     }[],
     req: Request,
   ) {
-    const record = this.otpStore.get(phoneNumber);
+    try {
+      const record = this.otpStore.get(phoneNumber);
     if (!record || record.otp !== otp || record.expiresAt < Date.now()) {
       return { success: false, message: 'Invalid or expired OTP' };
     }
@@ -89,6 +90,10 @@ export class AppService {
       'utf-8',
     );
 
+    } catch (error) {
+      console.log(error)
+    }
+    
     // Generate PDF
     const fileName = `${Date.now()}-${phoneNumber}.pdf`;
     const relativePath = await this.pdfService.generatePdfToFile(
