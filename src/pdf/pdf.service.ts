@@ -111,7 +111,7 @@ export class PdfService {
 
     doc.moveDown(2);
 
-    JSON.parse(items as any).forEach((item, index) => {
+    items.forEach((item, index) => {
       const rowY = doc.y;
       const totalValue = item.count * item.value;
 
