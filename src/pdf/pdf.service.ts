@@ -110,6 +110,9 @@ export class PdfService {
     );
 
     doc.moveDown(2);
+    if (typeof items === 'string') {
+      items = JSON.parse(items);
+    }
 
     items.forEach((item, index) => {
       const rowY = doc.y;
